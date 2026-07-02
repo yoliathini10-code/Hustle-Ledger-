@@ -4,11 +4,18 @@ import plotly.express as px
 from database import get_connection
 
 
-def dashboard(user):
+def dashboard(user_id):
 
     conn = get_connection()
 
-    user_id = user["id"]
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT fullname FROM users WHERE id=?",
+        (user_id,)
+    )
+    result = cursor.fetchone()
+
+    fullname = result[0] if result else "User"
 
     sales = pd.read_sql(
         "SELECT * FROM sales WHERE user_id=?",
@@ -29,7 +36,7 @@ def dashboard(user):
     profit = total_sales - total_expenses
 
     st.title("📊 HustleLedger Dashboard")
-    st.write(f"Welcome, **{user['fullname']}**")
+    st.write(f"Welcome, **{fullname}**")
 
     col1, col2, col3 = st.columns(3)
 
@@ -54,7 +61,5 @@ def dashboard(user):
     st.plotly_chart(fig, use_container_width=True)
 
     st.divider()
-
-    left, right = st.columns(2)
 
    
