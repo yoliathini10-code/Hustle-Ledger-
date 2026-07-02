@@ -1,5 +1,5 @@
 import streamlit as st
-from auth import register_user, login_user
+from auth import init_db, register_user, login_user
 from dashboard import dashboard
 
 st.set_page_config(
@@ -7,6 +7,8 @@ st.set_page_config(
     page_icon="💼",
     layout="wide"
 )
+
+init_db()
 
 st.title("💼 HustleLedger")
 st.caption("Helping informal businesses build a trusted financial track record.")
@@ -26,10 +28,13 @@ if menu == "Register":
 
     if st.button("Register"):
 
-        if register_user(fullname, email, password):
-            st.success("Account created successfully.")
+        if fullname == "" or email == "" or password == "":
+            st.warning("Please complete all fields.")
         else:
-            st.error("Email already exists.")
+            if register_user(fullname, email, password):
+                st.success("✅ Account created successfully.")
+            else:
+                st.error("Email already exists.")
 
 else:
 
@@ -43,7 +48,7 @@ else:
         user = login_user(email, password)
 
         if user:
-            st.success(f"Welcome {user[1]}")
+            st.success(f"Welcome {user[1]}!")
             dashboard()
         else:
             st.error("Incorrect email or password.")
