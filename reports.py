@@ -6,7 +6,6 @@ from fpdf import FPDF
 
 
 def export_excel(user_id):
-
     conn = get_connection()
 
     sales = pd.read_sql(
@@ -38,7 +37,6 @@ def export_excel(user_id):
 
 
 def export_pdf(user_id):
-
     conn = get_connection()
 
     sales = pd.read_sql(
@@ -72,9 +70,21 @@ def export_pdf(user_id):
     pdf.cell(0, 10, f"Total Expenses: R {total_expenses:.2f}", ln=True)
     pdf.cell(0, 10, f"Net Profit: R {profit:.2f}", ln=True)
 
-    pdf.ln(10)
+    pdf_output = pdf.output(dest="S").encode("latin-1")
 
-    pdf.cell(0, 10, f"Number of Sales: {len(sales)}", ln=True)
-    pdf.cell(0, 10, f"Number of Expenses: {len(expenses)}", ln=True)
+    st.download_button(
+        label="📄 Download PDF Report",
+        data=pdf_output,
+        file_name="HustleLedger_Report.pdf",
+        mime="application/pdf",
+    )
 
-    pdf_output = pdf.output(dest="S").encode
+
+def reports_page(user_id):
+    st.title("📊 Reports")
+
+    st.write("Export your business reports.")
+
+    export_excel(user_id)
+
+    export_pdf(user_id)
