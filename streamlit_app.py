@@ -1,57 +1,49 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-import os
+from auth import register_user, login_user
+from dashboard import dashboard
 
-st.set_page_config(page_title="HustleLedger", page_icon="💼")
+st.set_page_config(
+    page_title="HustleLedger",
+    page_icon="💼",
+    layout="wide"
+)
 
 st.title("💼 HustleLedger")
-st.subheader("Helping informal businesses build a trusted financial track record.")
-
-FILE = "transactions.csv"
-
-if os.path.exists(FILE):
-    df = pd.read_csv(FILE)
-else:
-    df = pd.DataFrame(columns=["Date", "Type", "Description", "Amount"])
+st.caption("Helping informal businesses build a trusted financial track record.")
 
 menu = st.sidebar.selectbox(
     "Menu",
-    ["Dashboard", "Add Sale", "Add Expense", "Transactions"]
+    ["Login", "Register"]
 )
 
-if menu == "Dashboard":
-    sales = df[df["Type"] == "Sale"]["Amount"].sum()
-    expenses = df[df["Type"] == "Expense"]["Amount"].sum()
+if menu == "Register":
 
-    st.metric("Total Sales", f"R{sales:.2f}")
-    st.metric("Total Expenses", f"R{expenses:.2f}")
-    st.metric("Profit", f"R{sales-expenses:.2f}")
+    st.subheader("Create Account")
 
-elif menu == "Add Sale":
-    st.header("Record Sale")
-    desc = st.text_input("Description")
-    amount = st.number_input("Amount", min_value=0.0)
+    fullname = st.text_input("Full Name")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
 
-    if st.button("Save Sale"):
-        new = pd.DataFrame([[datetime.now(), "Sale", desc, amount]],
-                           columns=df.columns)
-        df = pd.concat([df, new], ignore_index=True)
-        df.to_csv(FILE, index=False)
-        st.success("Sale saved!")
+    if st.button("Register"):
 
-elif menu == "Add Expense":
-    st.header("Record Expense")
-    desc = st.text_input("Description")
-    amount = st.number_input("Amount", min_value=0.0)
+        if register_user(fullname, email, password):
+            st.success("Account created successfully.")
+        else:
+            st.error("Email already exists.")
 
-    if st.button("Save Expense"):
-        new = pd.DataFrame([[datetime.now(), "Expense", desc, amount]],
-                           columns=df.columns)
-        df = pd.concat([df, new], ignore_index=True)
-        df.to_csv(FILE, index=False)
-        st.success("Expense saved!")
+else:
 
-elif menu == "Transactions":
-    st.header("Transaction History")
-    st.dataframe(df)
+    st.subheader("Login")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+
+        user = login_user(email, password)
+
+        if user:
+            st.success(f"Welcome {user[1]}")
+            dashboard()
+        else:
+            st.error("Incorrect email or password.")
