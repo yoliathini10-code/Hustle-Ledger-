@@ -54,14 +54,8 @@ if st.session_state.user is None:
 
         if st.button("Create Account"):
 
-            if register_user(
-                fullname,
-                email,
-                password,
-                business
-            ):
+            if register_user(fullname, email, password, business):
                 st.success("Account created successfully.")
-
             else:
                 st.error("Email already exists.")
 
@@ -70,38 +64,56 @@ if st.session_state.user is None:
         st.subheader("Login")
 
         email = st.text_input("Email")
-
-        password = st.text_input(
-            "Password",
-            type="password"
-        )
+        password = st.text_input("Password", type="password")
 
         if st.button("Login"):
 
-            user = login_user(
-                email,
-                password
-            )
+            user = login_user(email, password)
 
             if user:
-
                 st.session_state.user = user
                 st.rerun()
-
             else:
-
                 st.error("Invalid email or password.")
 
 # ------------------------
-# DASHBOARD
+# MAIN APPLICATION
 # ------------------------
 
 else:
 
     user = st.session_state.user
 
-    st.sidebar.success(
-        f"Welcome\n\n{user['fullname']}"
+    st.sidebar.success(f"Welcome {user['fullname']}")
+
+    page = st.sidebar.radio(
+        "Navigation",
+        [
+            "Dashboard",
+            "Add Sale",
+            "Add Expense",
+            "Transactions",
+            "Reports"
+        ]
     )
 
-   
+    if page == "Dashboard":
+        dashboard(user["id"])
+
+    elif page == "Add Sale":
+        add_sale(user["id"])
+
+    elif page == "Add Expense":
+        add_expense(user["id"])
+
+    elif page == "Transactions":
+        view_transactions(user["id"])
+
+    elif page == "Reports":
+        reports_page(user["id"])
+
+    st.sidebar.markdown("---")
+
+    if st.sidebar.button("Logout"):
+        st.session_state.user = None
+        st.rerun()
