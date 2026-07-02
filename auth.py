@@ -3,11 +3,21 @@ from database import get_connection, create_tables
 
 
 def hash_password(password):
-    password = password.encode("utf-8")
-    return bcrypt.hashpw(password, bcrypt.gensalt())
+    return bcrypt.hashpw(
+        password.encode("utf-8"),
+        bcrypt.gensalt()
+    )
 
 
 def verify_password(password, hashed_password):
+    # SQLite may return bytes, bytearray or str
+
+    if isinstance(hashed_password, bytearray):
+        hashed_password = bytes(hashed_password)
+
+    elif isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode("utf-8")
+
     return bcrypt.checkpw(
         password.encode("utf-8"),
         hashed_password
@@ -34,8 +44,8 @@ def register_user(fullname, email, password, business_name):
 
     cursor.execute("""
         INSERT INTO users
-        (fullname,email,password,business_name)
-        VALUES(?,?,?,?)
+        (fullname, email, password, business_name)
+        VALUES (?, ?, ?, ?)
     """, (
         fullname,
         email,
